@@ -46,7 +46,6 @@ izlijeceni = { x: 0 for x in ZUPANIJE }
 for data in RE_IZLIJECENI.findall(r.text):
     izlijeceni[data[0]] = int(data[1])
 
-
 today = datetime.date.today()
 
 zarazeni_exists = os.path.exists("zarazeni.csv")
@@ -60,7 +59,6 @@ with open("zarazeni.csv", "at") as f:
     for zup in ZUPANIJE:
         f.write(", %s" % zarazeni[zup])
     f.write("\n")
-
 
 izlijeceni_exists = os.path.exists("izlijeceni.csv")
 with open("izlijeceni.csv", "at") as f:
