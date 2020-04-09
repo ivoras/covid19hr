@@ -54,7 +54,6 @@ with open("zarazeni.csv", "at") as f:
         f.write('"datum", ')
         f.write(", ".join([ '"%s"' % x for x in ZUPANIJE]))
         f.write("\n")
-
     f.write('"%d-%02d-%02d"' % (today.year, today.month, today.day))
     for zup in ZUPANIJE:
         f.write(", %s" % zarazeni[zup])
