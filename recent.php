@@ -55,11 +55,42 @@ function data_set($filename, $n) {
     return $data;
 }
 
+function get_summary() {
+    $cache_filename = "/tmp/time-series.csv.json";
+    $st = @stat($cache_filename);
+    if (!$st || time() - $st['mtime'] > 4*3600) {
+        $data = array();
+        $summary = @file_get_contents("https://raw.githubusercontent.com/viborccom/data/master/covid-19/croatia/time-series.csv");
+        if ($summary) {
+            $lines = explode("\n", $summary);
+            $header = str_getcsv($lines[0]);
+            for ($i = 1; $i < count($lines); $i++) {
+                $row = str_getcsv($lines[$i]);
+                if (!sscanf($row[0], "%d.%d.%d", $d, $m, $y))
+                    die("sscanf\n");
+                $row[0] = sprintf("%04d-%02d-%02d", $y, $m, $d);
+                $crow = array();
+                for ($j = 1; $j < count($row); $j++) {
+                    $crow[$header[$j]] = $row[$j];
+                }
+                if (count($crow) > 0) {
+                    $data[$row[0]] = $crow;
+                }
+            }
+            file_put_contents($cache_filename, json_encode($data, JSON_NUMERIC_CHECK), LOCK_EX);
+        }
+    }
+    $data = json_decode(file_get_contents($cache_filename), true);
+
+    return $data;
+}
+
 
 $zarazeni = data_set('zarazeni.csv', 8);
 $izlijeceni = data_set('izlijeceni.csv', 8);
+$summary = get_summary();
 
-$data = array('zarazeni' => $zarazeni, 'izlijeceni' => $izlijeceni);
+$data = array('zarazeni' => $zarazeni, 'izlijeceni' => $izlijeceni, 'skupno' => $summary);
 
 header("Content-type: application/json");
 echo json_encode($data, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
